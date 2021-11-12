@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>BarGraph Trial</title>
+		<style type="text/css">
+			#chart-container{
+				width: auto;
+				height: auto;
+			}
+		</style>
+	</head>
+	<body>
+		<!--Load external scripts-->
+		<script type="text/javascript" src="jsFiles/jquery.min.js"></script>
+		<script type="text/javascript" src="jsFiles/chart.min.js"></script>
+
+		<p align="right" style="vertical-align: top;">
+			<a href="../mainPage/index.php">Home Page</a>
+		</p>
+		<div id="chart-container">
+			<canvas id="mycanvas"></canvas>
+		</div>
+
+		<script type="text/javascript">
+
+			//this function is used to make the displayed value for the date more readable, but doesn't change the actual value for the option
+			function formatDate(dateInput){
+			  return (String(dateInput).split('T'))[0];
+			}
+
+			var formatted_date=[];
+			var new_cases=[];
+
+			async function retreiveData(){
+				var api_url='https://healthdata.gov/resource/j8mb-icvb.json?state_name=Louisiana&overall_outcome=Positive';
+
+				const response= await fetch(api_url);
+				const json_data=await response.json();
+
+				json_data.forEach(function(date_val){
+					formatted_date.push(formatDate(date_val.date));
+					new_cases.push(date_val.new_results_reported);
+				});
+			}
+
+			//this function waits for the data from retrieveData, then plots those values onto the chart
+			async function plotCases(){
+				await retreiveData();
+				var chartdata={
+					labels:formatted_date,
+					datasets:[
+						{
+							label:'Number of Positive Covid Cases in Louisiana per day',
+							backgroundColor: 'rgba(255, 0, 0, 1)' ,
+							borderColor: 'rgba(200, 200, 200, 1)' ,
+							hoverBackgroundColor: 'rgba(200, 200, 200, 1)' ,
+							hoverBorderColor: 'rgba(200, 200, 200, 1)' ,
+							data: new_cases
+						}
+					]
+				};
+
+				var ctx= $("#mycanvas");
+
+				var barGraph=new Chart(ctx, {
+					type:'bar',
+					data: chartdata
+				});
+			}
+		</script>
+
+		<script type="text/javascript">
+			$(document).ready(function(){
+			  plotCases();
+			});
+		</script>
+
+		
+	</body>
+</html>
